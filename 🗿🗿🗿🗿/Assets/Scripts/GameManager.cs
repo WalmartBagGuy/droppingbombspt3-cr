@@ -1,15 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine;
 
+public class Reset : MonoBehaviour
+{
+    private void OnCollisionEnter(Collection collision)
+    {
+        Destroy(GameObject);
+    }
+}
 public class GameManager : MonoBehaviour
 {
     private Spawner spawner;
     public GameObject title;
     private Vector2 screenBounds;
-    public GameObject playerPrefab
+    public GameObject playerPrefab;
     private GameObject player;
     private bool gameStarted = false;
+    public GameObject splash;
         
         void Awake()
         {
@@ -21,6 +30,7 @@ public class GameManager : MonoBehaviour
     {
         spawner.active = false;
         title.SetActive(true);
+        splash.SetActive(false);
     }
 
     // Update is called once per frame
@@ -34,21 +44,36 @@ public class GameManager : MonoBehaviour
               //title.SetActive(false);
               ResetGame();
        }
+     } else
+     {
+        if (!player)
+        {
+            OnPlayerKilled();
+        }
      }
+    }
+    void OnPlayerKilled()
+    {
+      spawner.active = false;
+      gameStarted = false;
+
+      splash.SetActive(true);
+
     }
     var nextBomb = GameObject.FindGameObjectsWithTag("Bomb");
 
-    foreach (GameObject bombObgect in nextBomb)
+    foreach (GameObject bombObject in nextBomb)
     {
-        if (bombObgect.transform.position.y < (-screenBounds.y) - 12)
+        if (bombObject.transform.position.y < (-screenBounds.y) - 12 || !gameStarted)
         {
-            Destroy(bombObgect);
+            Destroy(bombObject);
         }
     }
     void ResetGame()
     {
         spawner.active = true;
         title.SetActive(false);
+        splash.SetActive(false);
         player = Instantiate(playerPrefab, new Vector3(0,0,0), playerPrefab.transform.rotation);
         gameStarted = true;
 

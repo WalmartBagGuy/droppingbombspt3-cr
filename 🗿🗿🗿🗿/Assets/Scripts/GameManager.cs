@@ -1,15 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine;
+using UnityEngine.UI;
 
-public class Reset : MonoBehaviour
-{
-    private void OnCollisionEnter(Collection collision)
-    {
-        Destroy(GameObject);
-    }
-}
+
 public class GameManager : MonoBehaviour
 {
     private Spawner spawner;
@@ -19,12 +13,18 @@ public class GameManager : MonoBehaviour
     private GameObject player;
     private bool gameStarted = false;
     public GameObject splash;
+    public GameObject scoreSystem;
+    public Text scoreText;
+    public int pointWorth = 1;
+    private int score;
         
         void Awake()
         {
             spawner = GameObject.Find("Spawner").GetComponent<Spawner>();
-            screenBounds = camera.main.ScreenToWorldPoint(new Vector3 (Screen.width, Screen.height, Camera.main.transform.position.z));
+            screenBounds = Camera.main.ScreenToWorldPoint(new Vector3( Screen.width, Screen.height, Camera.main.transform.position.z));
+            //screenBounds = GetComponent<Camera>().main.ScreenToWorldPoint(new Vector3 (Screen.width, Screen.height, Camera.main.transform.position.z));
             player = playerPrefab;
+            scoreText.enabled = false;
         }
     void Start()
     {
@@ -51,6 +51,19 @@ public class GameManager : MonoBehaviour
             OnPlayerKilled();
         }
      }
+     var nextBomb = GameObject.FindGameObjectsWithTag("Bomb");
+
+    foreach (GameObject bombObject in nextBomb)
+    {
+        if (!gameStarted)
+        {
+            Destroy(bombObject);
+        }else if (bombObject.transform.position.y < (-screenBounds.y) && gameStarted)
+        {
+            scoreSystem.GetComponent<Score>().AddScore(pointWorth);
+            Destroy(bombObject);
+        }
+    }
     }
     void OnPlayerKilled()
     {
@@ -60,15 +73,7 @@ public class GameManager : MonoBehaviour
       splash.SetActive(true);
 
     }
-    var nextBomb = GameObject.FindGameObjectsWithTag("Bomb");
-
-    foreach (GameObject bombObject in nextBomb)
-    {
-        if (bombObject.transform.position.y < (-screenBounds.y) - 12 || !gameStarted)
-        {
-            Destroy(bombObject);
-        }
-    }
+    
     void ResetGame()
     {
         spawner.active = true;
@@ -76,6 +81,10 @@ public class GameManager : MonoBehaviour
         splash.SetActive(false);
         player = Instantiate(playerPrefab, new Vector3(0,0,0), playerPrefab.transform.rotation);
         gameStarted = true;
+
+        scoreText.enabled = true;
+        scoreSystem.GetComponent<Score>().score = 0;
+        scoreSystem.GetComponent<Score>().Start();
 
     }
 }
